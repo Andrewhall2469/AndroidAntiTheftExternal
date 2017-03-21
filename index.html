@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Android Anti Theft</title>
+    <meta charset='utf-8' />
+  </head>
+  <body>
+    <p>Android Anti-Theft External User Interface!</p>
+
+    <!--Add buttons to initiate auth sequence and sign out-->
+    <button id="authorize-button" style="display: none;">Sign In To Google Drive</button>
+    <button id="signout-button" style="display: none;">Sign Out of Google Drive</button>
+	<button id="reset-button" style="display: none">Reset Device</button>
+	<button id="lock-button" style="display: none">Lock Device</button>
+	<button id="locate-button" style="display: none">Pull Device Location</button>
+	<button id="camera-button" style="display: none">Pull Camera Image</button>
+	<button id="devicedetails-button" style="display: none">Pull Device Details</button>
+	<input type="button" id="refresh-button" value="Click Here to perform another function" onClick="window.location.reload()" style="display: none">
+
+    <pre id="content"></pre>
+
+    <script type="text/javascript">
+      // Client ID and API key from the Developer Console
+      var CLIENT_ID = '1014742826804-3skgqqr6gf0lm862pisqbo4fuvsvikkn.apps.googleusercontent.com';
+
+      // Array of API discovery doc URLs for APIs used by the quickstart
+      var DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
+
+      // Authorization scopes required by the API; multiple scopes can be
+      // included, separated by spaces.
+      var SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'; 
+      var SCOPES ='https://www.googleapis.com/auth/drive.appdata';
+
+      var authorizeButton = document.getElementById('authorize-button');
+      var signoutButton = document.getElementById('signout-button');
+      var resetButton = document.getElementById('reset-button');
+      var lockButton = document.getElementById('lock-button');
+      var locateButton = document.getElementById('locate-button');
+      var cameraButton = document.getElementById('camera-button');
+      var devicedetailsButton = document.getElementById('devicedetails-button'); 
+      var refreshButton = document.getElementById('refresh-button');
+
+
+      
+
+      /**
+       *  On load, called to load the auth2 library and API client library.
+       */
+      function handleClientLoad() {
+        gapi.load('client:auth2', initClient);
+      }
+
+      /**
+       *  Initializes the API client library and sets up sign-in state
+       *  listeners.
+       */
+      function initClient() {
+        gapi.client.init({
+          discoveryDocs: DISCOVERY_DOCS,
+          clientId: CLIENT_ID,
+          scope: SCOPES
+        }).then(function () {
+          // Listen for sign-in state changes.
+          gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+          // Handle the initial sign-in state.
+          updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+          authorizeButton.onclick = handleAuthClick;
+          signoutButton.onclick = handleSignoutClick;
+          resetButton.onclick = handleResetClick;
+          lockButton.onclick = handleLockClick;
+          locateButton.onclick = handleLocateClick;
+          cameraButton.onclick = handleCameraClick;
+          devicedetailsButton.onclick = handleDeviceDetailsClick;
+          });
+      }
+
+      /**
+       *  Called when the signed in status changes, to update the UI
+       *  appropriately. After a sign-in, the API is called.
+       */
+      function updateSigninStatus(isSignedIn) {
+        if (isSignedIn) {
+          authorizeButton.style.display = 'none';
+          signoutButton.style.display = 'block';
+          resetButton.style.display = 'block';
+          lockButton.style.display = 'block';
+          locateButton.style.display = 'block';
+          cameraButton.style.display = 'block';
+          devicedetailsButton.style.display = 'block';
+        } else {
+          authorizeButton.style.display = 'block';
+          signoutButton.style.display = 'none';
+          resetButton.style.display = 'none';
+          lockButton.style.display = 'none';
+          locateButton.style.display = 'none';
+          cameraButton.style.display = 'none';
+          devicedetailsButton.style.display = 'none';
+        }
+      }
+
+      
+
+       function handleResetClick(event) {
+       		var r = confirm('Press OK to completely wipe your device, otherwise press cancel');
+			if (r == true) {
+				listFilesReset();
+				deleteFilesReset();
+				resetButton.style.display = 'none';
+				lockButton.style.display = 'none';
+				signoutButton.style.display = 'none';
+				locateButton.style.display = 'none';
+				cameraButton.style.display = "none";
+				devicedetailsButton.style.display = "none";
+				appendPre('Master Resetting Your Device..' + '\n' + '\n' + '*IGNORE FOLLOWING IT IS TO BE REMOVED BY THE DEVELOPER*' + '\n');
+				refreshButton.style.display = 'block';
+			}
+			else {
+				alert('Cancelled the Master Reset');
+			}
+			
+       }
+       function handleLockClick(event) {
+       		var r = confirm('Press OK to lock your device, otherwise press cancel');
+			if (r == true) {
+				listFilesLock();
+				deleteFilesLock();
+				lockButton.style.display = 'none';
+				resetButton.style.display = 'none';
+				signoutButton.style.display = 'none';
+				locateButton.style.display = 'none';
+				cameraButton.style.display = "none";
+				devicedetailsButton.style.display = "none";
+				appendPre('Locking Your Device..' + '\n' + '\n' + '*IGNORE FOLLOWING IT IS TO BE REMOVED BY THE DEVELOPER*' + '\n');
+				refreshButton.style.display = 'block';
+			}
+			else {
+				alert('Device not Locked');
+			}
+			
+       }
+
+       function handleLocateClick(event) {
+       		var r = confirm('Press OK to locate your device, otherwise press cancel');
+			if (r == true) {
+				listFilesLocate();
+				deleteFilesLocate();
+				lockButton.style.display = 'none';
+				resetButton.style.display = 'none';
+				signoutButton.style.display = 'none';
+				locateButton.style.display = 'none';
+				cameraButton.style.display = "none";
+				devicedetailsButton.style.display = "none";
+				appendPre('Locating your device.. check Google Drive for Co-ordinates' + '\n' + '\n' + '*IGNORE FOLLOWING IT IS TO BE REMOVED BY THE DEVELOPER*' + '\n');
+				refreshButton.style.display = 'block';
+			}
+			else {
+				alert('Device not Located');
+			}
+			
+       }
+
+       function handleCameraClick(event) {
+       		var r = confirm('Press OK to attempt to pull an image from the camera, otherwise press cancel');
+			if (r == true) {
+				listFilesCamera();
+				deleteFilesCamera();
+				lockButton.style.display = 'none';
+				resetButton.style.display = 'none';
+				signoutButton.style.display = 'none';
+				locateButton.style.display = 'none';
+				cameraButton.style.display = "none";
+				devicedetailsButton.style.display = "none";
+				appendPre('Attempting to pull image from device... check Google Drive for results' + '\n' + '\n' + '*IGNORE FOLLOWING IT IS TO BE REMOVED BY THE DEVELOPER*' + '\n');
+				refreshButton.style.display = 'block';
+			}
+			else {
+				alert('No Image Pulled');
+			}
+			
+       }
+
+       function handleDeviceDetailsClick(event) {
+       		var r = confirm('Press OK to retrieve device details, otherwise press cancel');
+			if (r == true) {
+				listFilesDeviceDetails();
+				deleteFilesDeviceDetails();
+				lockButton.style.display = 'none';
+				resetButton.style.display = 'none';
+				signoutButton.style.display = 'none';
+				locateButton.style.display = 'none';
+				cameraButton.style.display = "none";
+				devicedetailsButton.style.display = "none";
+				appendPre('Retrieving device details. check Google Drive for Results' + '\n' + '\n' + '*IGNORE FOLLOWING IT IS TO BE REMOVED BY THE DEVELOPER*' + '\n');
+				refreshButton.style.display = 'block';
+			}
+			else {
+				alert('Device details not pulled');
+			}
+			
+       }
+
+       /**
+       *  Sign in the user upon button click.
+       */
+
+      function handleAuthClick(event) {
+        gapi.auth2.getAuthInstance().signIn();
+      }
+
+      /**
+       *  Sign out the user upon button click.
+       */
+      function handleSignoutClick(event) {
+        gapi.auth2.getAuthInstance().signOut();
+      }
+
+      /**
+       * Append a pre element to the body containing the given message
+       * as its text node. Used to display the results of the API call.
+       *
+       * @param {string} message Text to be placed in pre element.
+       */
+      function appendPre(message) {
+        var pre = document.getElementById('content');
+        var textContent = document.createTextNode(message + '\n');
+        pre.appendChild(textContent);
+      }
+
+
+      function createNewFileReset(){
+ 	      	var fileMetadata = {
+            'mimeType' : 'application/json'
+        };
+            gapi.client.drive.files.create({
+        	name: 'Reset',
+            parents: ['appDataFolder'],
+            resource: fileMetadata,
+            fields: 'id'
+        }).execute(function(resp, raw_resp) {
+        	listFilesReset();
+        });
+      	} 
+
+      	function createNewFileLock(){
+ 	      	var fileMetadata = {
+            'mimeType' : 'application/json'
+        };
+            gapi.client.drive.files.create({
+        	name: 'Lock',
+            parents: ['appDataFolder'],
+            resource: fileMetadata,
+            fields: 'id'
+        }).execute(function(resp, raw_resp) {
+        	listFilesLock();
+        });
+      	}
+
+      	function createNewFileLocate(){
+ 	      	var fileMetadata = {
+            'mimeType' : 'application/json'
+        };
+            gapi.client.drive.files.create({
+        	name: 'Locate',
+            parents: ['appDataFolder'],
+            resource: fileMetadata,
+            fields: 'id'
+        }).execute(function(resp, raw_resp) {
+        	listFilesLocate();
+        });
+      	}
+
+      	function createNewFileCamera(){
+ 	      	var fileMetadata = {
+            'mimeType' : 'application/json'
+        };
+            gapi.client.drive.files.create({
+        	name: 'Camera',
+            parents: ['appDataFolder'],
+            resource: fileMetadata,
+            fields: 'id'
+        }).execute(function(resp, raw_resp) {
+        	listFilesCamera();
+        });
+      	}
+
+      	function createNewFileDeviceDetails(){
+ 	      	var fileMetadata = {
+            'mimeType' : 'application/json'
+        };
+            gapi.client.drive.files.create({
+        	name: 'DeviceDetails',
+            parents: ['appDataFolder'],
+            resource: fileMetadata,
+            fields: 'id'
+        }).execute(function(resp, raw_resp) {
+        	listFilesDeviceDetails();
+        });
+      	}
+
+      /**
+       * lists and creates new reset file
+       */    
+      function listFilesReset() {
+        gapi.client.drive.files.list({
+        'spaces': 'appDataFolder',
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+        }).then(function(response) {
+          var files = response.result.files;
+          if (files && files.length < 1)
+          {
+          	appendPre('\n' + 'Replacing with New File: ');
+           	createNewFileReset();
+          }
+          else if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            appendPre(file.name + ' (' + file.id + ')');
+            }
+          }
+        });
+      }
+
+      function listFilesLock() {
+        gapi.client.drive.files.list({
+        'spaces': 'appDataFolder',
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+        }).then(function(response) {
+          var files = response.result.files;
+          if (files && files.length < 1)
+          {
+          	appendPre('\n' + 'Replacing with New File: ');
+           	createNewFileLock();
+          }
+          else if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            appendPre(file.name + ' (' + file.id + ')');
+            }
+          }
+        });
+      }
+
+      function listFilesLocate() {
+        gapi.client.drive.files.list({
+        'spaces': 'appDataFolder',
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+        }).then(function(response) {
+          var files = response.result.files;
+          if (files && files.length < 1)
+          {
+          	appendPre('\n' + 'Replacing with New File: ');
+           	createNewFileLocate();
+          }
+          else if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            appendPre(file.name + ' (' + file.id + ')');
+            }
+          }
+        });
+      }
+
+      function listFilesCamera() {
+        gapi.client.drive.files.list({
+        'spaces': 'appDataFolder',
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+        }).then(function(response) {
+          var files = response.result.files;
+          if (files && files.length < 1)
+          {
+          	appendPre('\n' + 'Replacing with New File: ');
+           	createNewFileCamera();
+          }
+          else if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            appendPre(file.name + ' (' + file.id + ')');
+            }
+          }
+        });
+      }
+
+      function listFilesDeviceDetails() {
+        gapi.client.drive.files.list({
+        'spaces': 'appDataFolder',
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+        }).then(function(response) {
+          var files = response.result.files;
+          if (files && files.length < 1)
+          {
+          	appendPre('\n' + 'Replacing with New File: ');
+           	createNewFileDeviceDetails();
+          }
+          else if (files && files.length > 0) {
+            for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            appendPre(file.name + ' (' + file.id + ')');
+            }
+          }
+        });
+      }
+
+
+		//Delete file function to be called
+      function deleteFilesReset(fileId){
+      	gapi.client.drive.files.list({
+      	'spaces': 'appDataFolder',
+        'pageSize': 100,
+        'fields': "nextPageToken, files(id, name)"
+      	}).then(function(response){
+      		var files = response.result.files;
+      		appendPre('Found This File ');
+      		if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var file_id = file.id;
+                    deleteFileReset(file_id);
+                    }
+            }
+      	});
+      }
+      //Delete file function to be called
+      function deleteFilesLock(fileId){
+      	gapi.client.drive.files.list({
+      	'spaces': 'appDataFolder',
+        'pageSize': 100,
+        'fields': "nextPageToken, files(id, name)"
+      	}).then(function(response){
+      		var files = response.result.files;
+      		appendPre('Found This File ');
+      		if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var file_id = file.id;
+                    deleteFileLock(file_id);
+                    }
+            }
+      	});
+      }
+
+      //Delete file function to be called
+      function deleteFilesLocate(fileId){
+      	gapi.client.drive.files.list({
+      	'spaces': 'appDataFolder',
+        'pageSize': 100,
+        'fields': "nextPageToken, files(id, name)"
+      	}).then(function(response){
+      		var files = response.result.files;
+      		appendPre('Found This File ');
+      		if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var file_id = file.id;
+                    deleteFileLocate(file_id);
+                    }
+            }
+      	});
+      }
+
+      //Delete file function to be called
+      function deleteFilesCamera(fileId){
+      	gapi.client.drive.files.list({
+      	'spaces': 'appDataFolder',
+        'pageSize': 100,
+        'fields': "nextPageToken, files(id, name)"
+      	}).then(function(response){
+      		var files = response.result.files;
+      		appendPre('Found This File ');
+      		if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var file_id = file.id;
+                    deleteFileCamera(file_id);
+                    }
+            }
+      	});
+      }
+
+      //Delete file function to be called
+      function deleteFilesDeviceDetails(fileId){
+      	gapi.client.drive.files.list({
+      	'spaces': 'appDataFolder',
+        'pageSize': 100,
+        'fields': "nextPageToken, files(id, name)"
+      	}).then(function(response){
+      		var files = response.result.files;
+      		appendPre('Found This File ');
+      		if (files && files.length > 0) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var file_id = file.id;
+                    deleteFileDeviceDetails(file_id);
+                    }
+            }
+      	});
+      }
+     
+      //this is the actual deleter but needs re-refrencing after getting back the ID.
+    function deleteFileReset(file_id) {
+    var request = gapi.client.drive.files.delete({
+        fileId: file_id
+    });
+    request.execute(function(resp) {listFilesReset();});
+	}
+
+	function deleteFileLock(file_id) {
+      var request = gapi.client.drive.files.delete({
+        fileId: file_id
+    });
+    request.execute(function(resp) {listFilesLock();});
+	}
+
+	function deleteFileLocate(file_id) {
+      var request = gapi.client.drive.files.delete({
+        fileId: file_id
+    });
+    request.execute(function(resp) {listFilesLocate();});
+	}
+
+	function deleteFileCamera(file_id) {
+      var request = gapi.client.drive.files.delete({
+        fileId: file_id
+    });
+    request.execute(function(resp) {listFilesCamera();});
+	}
+
+	function deleteFileDeviceDetails(file_id) {
+      var request = gapi.client.drive.files.delete({
+        fileId: file_id
+    });
+    request.execute(function(resp) {listFilesDeviceDetails();});
+	}
+
+    </script>
+
+    <script async defer src="https://apis.google.com/js/api.js"
+      onload="this.onload=function(){};handleClientLoad()"
+      onreadystatechange="if (this.readyState === 'complete') this.onload()">
+    </script>
+  </body>
+</html>
